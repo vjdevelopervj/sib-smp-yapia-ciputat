@@ -1,0 +1,1388 @@
+pengguna.blade.php:
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manajemen Pengguna - InventorySys</title>
+    <!-- CSRF Token -->
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Animate.css -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+    <style>
+        .header-gradient {
+            background: linear-gradient(135deg, #ffffff 0%, #f9fafb 100%);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .search-input {
+            transition: all 0.3s ease;
+            border-radius: 0.5rem;
+        }
+
+        .search-input:focus {
+            border-color: #6366f1;
+        }
+
+        .pulse-notification {
+            position: absolute;
+            top: -2px;
+            right: -2px;
+            width: 8px;
+            height: 8px;
+            background-color: #ef4444;
+            border-radius: 50%;
+            animation: pulse 1.5s infinite;
+        }
+
+        .table-container {
+            background-color: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .table-container:hover {
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .table-row-hover:hover {
+            background-color: #f9fafb;
+        }
+
+        .badge {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            border-radius: 9999px;
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .badge-admin {
+            background-color: #e0e7ff;
+            color: #4f46e5;
+        }
+
+        .badge-petugas {
+            background-color: #ecfdf5;
+            color: #059669;
+        }
+
+        .badge-active {
+            background-color: #dcfce7;
+            color: #16a34a;
+        }
+
+        .badge-inactive {
+            background-color: #fee2e2;
+            color: #dc2626;
+        }
+
+        .modern-select {
+            transition: all 0.3s ease;
+            border-radius: 0.375rem;
+        }
+
+        .modern-select:focus {
+            outline: none;
+            border-color: #6366f1;
+            box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+        }
+
+        .btn-scale {
+            transition: transform 0.15s ease;
+        }
+
+        .btn-scale:hover {
+            transform: scale(1.05);
+        }
+
+        .btn-scale:active {
+            transform: scale(0.98);
+        }
+
+        /* Sidebar styles */
+        .sidebar {
+            transition: all 0.3s ease;
+            width: 250px;
+        }
+
+        .sidebar.collapsed {
+            width: 80px;
+        }
+
+        .sidebar.expanded {
+            width: 250px;
+        }
+
+        .nav-item {
+            transition: all 0.3s ease;
+        }
+
+        .nav-item:hover {
+            background-color: rgba(99, 102, 241, 0.3);
+        }
+
+        .nav-item.active {
+            background-color: rgba(99, 102, 241, 0.5);
+        }
+
+        .nav-text {
+            transition: opacity 0.3s ease;
+        }
+
+        .sidebar.collapsed .nav-text {
+            opacity: 0;
+            width: 0;
+            overflow: hidden;
+        }
+
+        .sidebar.collapsed .user-info {
+            opacity: 0;
+            width: 0;
+            overflow: hidden;
+        }
+
+        .toggle-btn {
+            transition: transform 0.3s ease;
+        }
+
+        .toggle-btn.collapsed {
+            transform: rotate(180deg);
+        }
+
+        .user-avatar {
+            transition: all 0.3s ease;
+        }
+
+        .logo-text {
+            transition: opacity 0.3s ease;
+        }
+
+        .sidebar.collapsed .logo-text {
+            opacity: 0;
+            width: 0;
+            overflow: hidden;
+        }
+
+        .glow-effect:hover {
+            box-shadow: 0 0 10px rgba(165, 180, 252, 0.5);
+        }
+
+        .glow-effect.active {
+            box-shadow: 0 0 15px rgba(165, 180, 252, 0.7);
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(0.95);
+                opacity: 1;
+            }
+
+            70% {
+                transform: scale(1.3);
+                opacity: 0.7;
+            }
+
+            100% {
+                transform: scale(0.95);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50">
+    <div class="flex h-screen w-full overflow-hidden">
+        <!-- Sidebar -->
+        <div id="sidebar"
+            class="sidebar bg-gradient-to-b from-indigo-700 to-indigo-800 text-white flex-shrink-0 collapsed relative h-full">
+            <div class="flex flex-col h-full">
+                <!-- Top part of sidebar (logo and menu) -->
+                <div class="flex-1 overflow-y-auto">
+                    <div class="p-4 flex items-center justify-between border-b border-indigo-600">
+                        <div class="flex items-center space-x-2">
+                            <i class="fas fa-boxes text-2xl text-indigo-200"></i>
+                            <span class="text-xl font-bold logo-text text-indigo-50">
+                                InventorySys
+                            </span>
+                        </div>
+                        <button id="toggleSidebar"
+                            class="text-indigo-200 hover:text-white focus:outline-none toggle-btn collapsed transition-colors"
+                            onclick="toggleSidebarState()">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                    </div>
+                    <nav class="p-4">
+                        <div class="space-y-2">
+                            <a href="/dashboard"
+                                class="flex items-center space-x-2 p-2 rounded-lg hover:bg-indigo-800/30 nav-item glow-effect {{ request()->is('dashboard') ? 'bg-indigo-800/50 active' : '' }}">
+                                <i class="fas fa-tachometer-alt text-indigo-200"></i>
+                                <span class="nav-text font-medium text-indigo-50">
+                                    Dashboard
+                                </span>
+                            </a>
+                            <a href="/databarang"
+                                class="flex items-center space-x-2 p-2 rounded-lg hover:bg-indigo-800/30 nav-item glow-effect {{ request()->is('databarang') ? 'bg-indigo-800/50 active' : '' }}">
+                                <i class="fas fa-box text-indigo-200"></i>
+                                <span class="nav-text font-medium text-indigo-50">
+                                    Data Barang
+                                </span>
+                            </a>
+                            <a href="/dataorang"
+                                class="flex items-center space-x-2 p-2 rounded-lg hover:bg-indigo-800/30 nav-item glow-effect {{ request()->is('dataorang') ? 'bg-indigo-800/50 active' : '' }}">
+                                <i class="fas fa-users text-indigo-200"></i>
+                                <span class="nav-text font-medium text-indigo-50">
+                                    Data Orang
+                                </span>
+                            </a>
+                            <a href="/peminjaman"
+                                class="flex items-center space-x-2 p-2 rounded-lg hover:bg-indigo-800/30 nav-item glow-effect {{ request()->is('peminjaman') ? 'bg-indigo-800/50 active' : '' }}">
+                                <i class="fas fa-exchange-alt text-indigo-200"></i>
+                                <span class="nav-text font-medium text-indigo-50">
+                                    Peminjaman
+                                </span>
+                            </a>
+                            <a href="/laporan"
+                                class="flex items-center space-x-2 p-2 rounded-lg hover:bg-indigo-800/30 nav-item glow-effect {{ request()->is('laporan') ? 'bg-indigo-800/50 active' : '' }}">
+                                <i class="fas fa-chart-bar text-indigo-200"></i>
+                                <span class="nav-text font-medium text-indigo-50">
+                                    Laporan
+                                </span>
+                            </a>
+                            <a href="/pengguna"
+                                class="flex items-center space-x-2 p-2 rounded-lg hover:bg-indigo-800/30 nav-item glow-effect {{ request()->is('pengguna') ? 'bg-indigo-800/50 active' : '' }}">
+                                <i class="fas fa-users-cog text-indigo-200"></i>
+                                <span class="nav-text font-medium text-indigo-50">
+                                    Pengguna
+                                </span>
+                            </a>
+                        </div>
+                    </nav>
+                </div>
+
+                <!-- Bottom part of sidebar (user info and logout) -->
+                <div class="w-full p-4 border-t border-indigo-600">
+                    <div class="flex items-center space-x-2 mb-3">
+                        <div
+                            class="w-10 h-10 rounded-full bg-indigo-600/30 flex items-center justify-center user-avatar border-2 border-indigo-400/50">
+                            <i class="fas fa-user text-indigo-200"></i>
+                        </div>
+                        <div class="user-info">
+                            <div class="font-medium text-indigo-50">
+                                {{ Auth::user()->username ?? 'Admin' }}
+                            </div>
+                            <div class="text-xs text-indigo-300">
+                                {{ Auth::user()->role === 'admin' ? 'Administrator' : 'Pengguna' }}
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Logout Button -->
+                    <form method="POST" action="{{ route('logout') }}">
+                        @csrf
+                        <button type="submit"
+                            class="w-full flex items-center justify-center space-x-2 bg-indigo-600 hover:bg-indigo-700 text-white py-2 px-4 rounded-lg transition-colors duration-300">
+                            <i class="fas fa-sign-out-alt text-indigo-200"></i>
+                            <span class="nav-text font-medium text-indigo-50">
+                                Logout
+                            </span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="flex-1 overflow-auto">
+            <!-- Header -->
+            <header class="header-gradient p-4 flex items-center justify-between sticky top-0 z-10">
+                <div class="flex items-center">
+                    <button id="mobileToggleSidebar"
+                        class="text-gray-500 hover:text-gray-700 mr-4 focus:outline-none lg:hidden transition-colors">
+                        <i class="fas fa-bars text-xl"></i>
+                    </button>
+                    <h1 class="text-2xl font-bold text-gray-800 animate__animated animate__fadeIn">
+                        Manajemen Pengguna
+                    </h1>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="relative">
+                        <input type="text" placeholder="Search..."
+                            class="search-input pl-10 pr-4 py-2 border border-gray-200 focus:outline-none focus:border-indigo-500 w-64"
+                            id="searchInput">
+                        <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+                    </div>
+                    <button class="text-gray-500 hover:text-gray-700 transition-colors relative">
+                        <i class="fas fa-bell text-xl"></i>
+                        <span class="pulse-notification"></span>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Content -->
+            <main class="p-6 animate__animated animate__fadeIn animate__faster">
+                <!-- Loading State (hidden by default) -->
+                <div id="loadingIndicator" class="flex justify-center items-center p-4 hidden">
+                    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+                </div>
+
+                <!-- Error State (hidden by default) -->
+                <div id="errorAlert"
+                    class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4 hidden"
+                    role="alert">
+                    <strong class="font-bold">Error!</strong>
+                    <span class="block sm:inline" id="errorMessage"></span>
+                    <button onclick="hideError()" class="absolute top-0 bottom-0 right-0 px-4 py-3">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+
+                <!-- Action Bar -->
+                <div class="flex justify-between items-center mb-6">
+                    <button id="addUserBtn"
+                        class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors duration-300">
+                        <i class="fas fa-plus"></i>
+                        <span>Tambah Pengguna</span>
+                    </button>
+
+                    <div class="flex items-center space-x-2">
+                        <span class="text-sm text-gray-600">Items per page:</span>
+                        <select id="itemsPerPageSelect"
+                            class="modern-select border border-gray-200 px-3 py-1 text-sm focus:outline-none">
+                            <option value="10">10</option>
+                            <option value="25">25</option>
+                            <option value="50">50</option>
+                            <option value="100">100</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Users Table -->
+                <div class="bg-white rounded-xl shadow-md overflow-hidden transition-all duration-300 hover:shadow-lg">
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Nama Lengkap
+                                    </th>
+                                    <th
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Username
+                                    </th>
+                                    <th
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Email
+                                    </th>
+                                    <th
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Role
+                                    </th>
+                                    <th
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Status
+                                    </th>
+                                    <th
+                                        class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Aksi
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody id="usersTableBody" class="bg-white divide-y divide-gray-200">
+                                <!-- Users will be loaded here dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Pagination -->
+                    <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+                        <div class="flex-1 flex justify-between sm:hidden">
+                            <button id="prevPageMobile"
+                                class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50">
+                                Previous
+                            </button>
+                            <button id="nextPageMobile"
+                                class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50">
+                                Next
+                            </button>
+                        </div>
+                        <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                            <div>
+                                <p class="text-sm text-gray-700" id="paginationInfo">
+                                    Showing <span class="font-medium">1</span> to <span class="font-medium">10</span>
+                                    of <span class="font-medium">0</span> results
+                                </p>
+                            </div>
+                            <div>
+                                <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px"
+                                    aria-label="Pagination">
+                                    <button id="prevPage"
+                                        class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50">
+                                        <span class="sr-only">Previous</span>
+                                        <i class="fas fa-chevron-left"></i>
+                                    </button>
+
+                                    <span
+                                        class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700"
+                                        id="currentPage">
+                                        1
+                                    </span>
+
+                                    <button id="nextPage"
+                                        class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50">
+                                        <span class="sr-only">Next</span>
+                                        <i class="fas fa-chevron-right"></i>
+                                    </button>
+                                </nav>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+
+        <!-- Add/Edit User Modal -->
+        <div id="userModal" class="fixed inset-0 z-50 overflow-y-auto hidden">
+            <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+                <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
+
+                <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+
+                <div
+                    class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                    <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                        <div class="sm:flex sm:items-start">
+                            <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+                                <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4" id="userModalTitle">
+                                    Tambah Pengguna Baru
+                                </h3>
+                                <form id="userForm">
+                                    <div class="mt-2 space-y-4">
+                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div>
+                                                <label for="userFirstName"
+                                                    class="block text-sm font-medium text-gray-700">
+                                                    Nama Depan
+                                                </label>
+                                                <input type="text" id="userFirstName" name="first_name"
+                                                    class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                                                    required />
+                                            </div>
+                                            <div>
+                                                <label for="userLastName"
+                                                    class="block text-sm font-medium text-gray-700">
+                                                    Nama Belakang
+                                                </label>
+                                                <input type="text" id="userLastName" name="last_name"
+                                                    class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" />
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <label for="userEmail" class="block text-sm font-medium text-gray-700">
+                                                Email
+                                            </label>
+                                            <input type="email" id="userEmail" name="email"
+                                                class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                                                required />
+                                        </div>
+                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div>
+                                                <label for="userUsername"
+                                                    class="block text-sm font-medium text-gray-700">
+                                                    Username
+                                                </label>
+                                                <input type="text" id="userUsername" name="username"
+                                                    class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                                                    required />
+                                            </div>
+                                            <div>
+                                                <label for="userRole" class="block text-sm font-medium text-gray-700">
+                                                    Role
+                                                </label>
+                                                <select id="userRole" name="role"
+                                                    class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                                                    <option value="petugas">Petugas</option>
+                                                    <option value="admin">Admin</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div id="passwordFields">
+                                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                <div>
+                                                    <label for="userPassword"
+                                                        class="block text-sm font-medium text-gray-700">
+                                                        Password
+                                                        <button type="button" id="generatePasswordBtn"
+                                                            class="ml-2 text-xs text-indigo-600 hover:text-indigo-500">
+                                                            Generate
+                                                        </button>
+                                                    </label>
+                                                    <input type="password" id="userPassword" name="password"
+                                                        class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                                                        required />
+                                                </div>
+                                                <div>
+                                                    <label for="userConfirmPassword"
+                                                        class="block text-sm font-medium text-gray-700">
+                                                        Konfirmasi Password
+                                                    </label>
+                                                    <input type="password" id="userConfirmPassword"
+                                                        name="password_confirmation"
+                                                        class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                                                        required />
+                                                </div>
+                                            </div>
+                                            <div class="text-xs text-gray-500 mt-1">
+                                                Password minimal 8 karakter, mengandung huruf besar, huruf kecil, dan
+                                                angka.
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <label for="userStatus" class="block text-sm font-medium text-gray-700">
+                                                Status
+                                            </label>
+                                            <select id="userStatus" name="status"
+                                                class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                                                <option value="active">Aktif</option>
+                                                <option value="inactive">Nonaktif</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse mt-4">
+                                        <button type="submit"
+                                            class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:ml-3 sm:w-auto sm:text-sm transition-colors">
+                                            Simpan
+                                        </button>
+                                        <button type="button" id="cancelUserModal"
+                                            class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm transition-colors">
+                                            Batal
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Change Password Modal -->
+        <div id="changePasswordModal" class="fixed inset-0 z-50 overflow-y-auto hidden">
+            <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+                <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
+
+                <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+
+                <div
+                    class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-md sm:w-full">
+                    <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                        <div class="sm:flex sm:items-start">
+                            <div
+                                class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 sm:mx-0 sm:h-10 sm:w-10 shadow-inner">
+                                <i class="fas fa-key text-blue-600"></i>
+                            </div>
+                            <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+                                <h3 class="text-lg leading-6 font-medium text-gray-900">
+                                    Ganti Password
+                                </h3>
+                                <div class="mt-4">
+                                    <p class="text-sm text-gray-500 mb-4" id="changePasswordUserInfo">
+                                        <!-- User info will be inserted here -->
+                                    </p>
+
+                                    <div id="changePasswordError"
+                                        class="mb-4 p-3 rounded-md bg-red-100 text-red-800 hidden">
+                                        <!-- Error message will be inserted here -->
+                                    </div>
+
+                                    <form id="changePasswordForm">
+                                        <div class="space-y-4">
+                                            <div>
+                                                <label for="currentPassword"
+                                                    class="block text-sm font-medium text-gray-700">
+                                                    Password Saat Ini
+                                                </label>
+                                                <input type="password" id="currentPassword" name="current_password"
+                                                    class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                                                    required />
+                                            </div>
+                                            <div>
+                                                <label for="newPassword"
+                                                    class="block text-sm font-medium text-gray-700">
+                                                    Password Baru
+                                                </label>
+                                                <input type="password" id="newPassword" name="new_password"
+                                                    class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                                                    required />
+                                            </div>
+                                            <div>
+                                                <label for="confirmNewPassword"
+                                                    class="block text-sm font-medium text-gray-700">
+                                                    Konfirmasi Password Baru
+                                                </label>
+                                                <input type="password" id="confirmNewPassword"
+                                                    name="new_password_confirmation"
+                                                    class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                                                    required />
+                                            </div>
+                                            <div class="text-xs text-gray-500 mt-1">
+                                                Password minimal 8 karakter, mengandung huruf besar, huruf kecil, dan
+                                                angka.
+                                            </div>
+                                        </div>
+                                        <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse mt-4">
+                                            <button type="submit"
+                                                class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:ml-3 sm:w-auto sm:text-sm transition-colors"
+                                                id="changePasswordSubmitBtn">
+                                                Ganti Password
+                                            </button>
+                                            <button type="button" id="cancelChangePasswordModal"
+                                                class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm transition-colors">
+                                                Batal
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Delete User Confirmation Modal -->
+        <div id="deleteUserModal" class="fixed inset-0 z-50 overflow-y-auto hidden">
+            <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+                <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
+
+                <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+
+                <div
+                    class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                    <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                        <div class="sm:flex sm:items-start">
+                            <div
+                                class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10 shadow-inner">
+                                <i class="fas fa-exclamation-triangle text-red-600"></i>
+                            </div>
+                            <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                                <h3 class="text-lg leading-6 font-medium text-gray-900">
+                                    Hapus Data Pengguna
+                                </h3>
+                                <div class="mt-2">
+                                    <p class="text-sm text-gray-500" id="deleteUserInfo">
+                                        <!-- User info will be inserted here -->
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                        <button type="button" id="confirmDeleteUser"
+                            class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm transition-colors">
+                            Hapus
+                        </button>
+                        <button type="button" id="cancelDeleteUserModal"
+                            class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm transition-colors">
+                            Batal
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let currentPage = 1;
+        let itemsPerPage = 10;
+        let totalUsers = 0;
+        let searchQuery = "";
+        let selectedUser = null;
+        let isEditMode = false;
+        let users = [];
+
+        // DOM elements
+        const loadingIndicator = document.getElementById('loadingIndicator');
+        const errorAlert = document.getElementById('errorAlert');
+        const errorMessage = document.getElementById('errorMessage');
+        const searchInput = document.getElementById('searchInput');
+        const itemsPerPageSelect = document.getElementById('itemsPerPageSelect');
+        const usersTableBody = document.getElementById('usersTableBody');
+        const paginationInfo = document.getElementById('paginationInfo');
+        const currentPageSpan = document.getElementById('currentPage');
+        const prevPageBtn = document.getElementById('prevPage');
+        const nextPageBtn = document.getElementById('nextPage');
+        const prevPageMobileBtn = document.getElementById('prevPageMobile');
+        const nextPageMobileBtn = document.getElementById('nextPageMobile');
+
+        // Modal elements
+        const userModal = document.getElementById('userModal');
+        const userModalTitle = document.getElementById('userModalTitle');
+        const userForm = document.getElementById('userForm');
+        const passwordFields = document.getElementById('passwordFields');
+        const generatePasswordBtn = document.getElementById('generatePasswordBtn');
+        const cancelUserModalBtn = document.getElementById('cancelUserModal');
+
+        const changePasswordModal = document.getElementById('changePasswordModal');
+        const changePasswordUserInfo = document.getElementById('changePasswordUserInfo');
+        const changePasswordError = document.getElementById('changePasswordError');
+        const changePasswordForm = document.getElementById('changePasswordForm');
+        const cancelChangePasswordModalBtn = document.getElementById('cancelChangePasswordModal');
+        const changePasswordSubmitBtn = document.getElementById('changePasswordSubmitBtn');
+
+        const deleteUserModal = document.getElementById('deleteUserModal');
+        const deleteUserInfo = document.getElementById('deleteUserInfo');
+        const confirmDeleteUserBtn = document.getElementById('confirmDeleteUser');
+        const cancelDeleteUserModalBtn = document.getElementById('cancelDeleteUserModal');
+
+        // API Base URL
+        const API_BASE_URL = window.location.origin;
+
+        // Helper functions
+        function showLoading() {
+            loadingIndicator.classList.remove('hidden');
+        }
+
+        function hideLoading() {
+            loadingIndicator.classList.add('hidden');
+        }
+
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorAlert.classList.remove('hidden');
+        }
+
+        function hideError() {
+            errorAlert.classList.add('hidden');
+        }
+
+        function showChangePasswordError(message) {
+            changePasswordError.textContent = message;
+            changePasswordError.classList.remove('hidden');
+        }
+
+        function hideChangePasswordError() {
+            changePasswordError.classList.add('hidden');
+        }
+
+        function formatUser(user) {
+            return {
+                id: user.id,
+                firstName: user.first_name || '',
+                lastName: user.last_name || '',
+                name: `${user.first_name || ''} ${user.last_name || ''}`.trim(),
+                email: user.email || '',
+                username: user.username || '',
+                role: user.role || 'petugas',
+                status: user.status || 'active',
+                avatarColor: user.role === 'admin' ? 'indigo' : 'green'
+            };
+        }
+
+        function generateRandomPassword() {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+            let password = '';
+            for (let i = 0; i < 10; i++) {
+                password += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return password;
+        }
+
+        function validatePassword(password) {
+            const minLength = 8;
+            const hasUpperCase = /[A-Z]/.test(password);
+            const hasLowerCase = /[a-z]/.test(password);
+            const hasNumbers = /\d/.test(password);
+
+            return password.length >= minLength && hasUpperCase && hasLowerCase && hasNumbers;
+        }
+
+        // API functions
+        async function handleApiResponse(response) {
+            const contentType = response.headers.get('content-type');
+
+            if (!contentType || !contentType.includes('application/json')) {
+                const text = await response.text();
+                if (text.startsWith('<!DOCTYPE html>') || text.startsWith('<html')) {
+                    // Token might be expired, redirect to login
+                    window.location.href = '/login';
+                    throw new Error('Session expired, please login again');
+                }
+                throw new Error(`Invalid content type: ${contentType}. Response: ${text}`);
+            }
+
+            if (response.status === 401) {
+                // Unauthorized - token expired or invalid
+                localStorage.removeItem('token');
+                window.location.href = '/login';
+                throw new Error('Session expired, please login again');
+            }
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+            }
+
+            return response.json();
+        }
+
+        async function fetchUsers() {
+            showLoading();
+            hideError();
+
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    window.location.href = '/login';
+                    return;
+                }
+
+                const response = await fetch(
+                    `${API_BASE_URL}/api/users?page=${currentPage}&limit=${itemsPerPage}&search=${encodeURIComponent(searchQuery)}`, {
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Accept': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                        }
+                    }
+                );
+
+                const data = await handleApiResponse(response);
+
+                if (!data.data || !data.pagination) {
+                    throw new Error('Invalid response format from server');
+                }
+
+                users = data.data.map(formatUser);
+                totalUsers = data.pagination.total;
+
+                renderUsers();
+                updatePagination();
+            } catch (err) {
+                console.error('Error fetching users:', err);
+                showError(err.message);
+            } finally {
+                hideLoading();
+            }
+        }
+
+        async function saveUser(userData) {
+            showLoading();
+
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    window.location.href = '/login';
+                    return;
+                }
+
+                const url = isEditMode ?
+                    `${API_BASE_URL}/api/users/${selectedUser.id}` :
+                    `${API_BASE_URL}/api/users`;
+
+                const method = isEditMode ? 'PUT' : 'POST';
+
+                const response = await fetch(url, {
+                    method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`,
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    },
+                    body: JSON.stringify({
+                        first_name: userData.firstName,
+                        last_name: userData.lastName,
+                        email: userData.email,
+                        username: userData.username,
+                        password: userData.password,
+                        password_confirmation: userData.confirmPassword, // Tambahkan ini
+                        role: userData.role,
+                        status: userData.status
+                    })
+                });
+
+                // Tangkap response error 422
+                if (response.status === 422) {
+                    const errorData = await response.json();
+                    console.error('Validation errors:', errorData);
+
+                    let errorMessages = [];
+                    for (const field in errorData.errors) {
+                        errorMessages.push(...errorData.errors[field]);
+                    }
+
+                    showError(errorMessages.join('<br>'));
+                    return;
+                }
+
+                const data = await handleApiResponse(response);
+                console.log('User saved successfully:', data);
+
+                await fetchUsers();
+                closeUserModal();
+            } catch (error) {
+                console.error('Error saving user:', error);
+                showError(error.message || 'Terjadi kesalahan saat menyimpan pengguna');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        async function changeUserPassword(passwordData) {
+            showLoading();
+            changePasswordSubmitBtn.disabled = true;
+            changePasswordSubmitBtn.innerHTML = `
+            <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            Memproses...
+        `;
+
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    window.location.href = '/login';
+                    return;
+                }
+
+                const response = await fetch(`${API_BASE_URL}/api/users/${selectedUser.id}/change-password`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`,
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    },
+                    body: JSON.stringify({
+                        current_password: passwordData.currentPassword,
+                        new_password: passwordData.newPassword
+                    })
+                });
+
+                const data = await handleApiResponse(response);
+
+                alert('Password berhasil diubah');
+                closeChangePasswordModal();
+            } catch (error) {
+                console.error('Error changing password:', error);
+                showChangePasswordError(error.message || 'Gagal mengubah password');
+            } finally {
+                hideLoading();
+                changePasswordSubmitBtn.disabled = false;
+                changePasswordSubmitBtn.textContent = 'Ganti Password';
+            }
+        }
+
+        async function deleteUser() {
+            showLoading();
+
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    window.location.href = '/login';
+                    return;
+                }
+
+                const response = await fetch(`${API_BASE_URL}/api/users/${selectedUser.id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    }
+                });
+
+                await handleApiResponse(response);
+                await fetchUsers();
+                closeDeleteUserModal();
+            } catch (error) {
+                console.error('Error deleting user:', error);
+                showError(error.message || 'Gagal menghapus pengguna');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // Render functions
+        function renderUsers() {
+            usersTableBody.innerHTML = '';
+
+            if (users.length === 0) {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                <td colspan="6" class="px-6 py-4 text-center text-sm text-gray-500">
+                    Tidak ada data pengguna
+                </td>
+            `;
+                usersTableBody.appendChild(row);
+                return;
+            }
+
+            users.forEach(user => {
+                const row = document.createElement('tr');
+                row.className = 'table-row-hover animate__animated animate__fadeIn';
+                row.innerHTML = `
+                <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0 h-10 w-10 rounded-full bg-${user.avatarColor}-100 flex items-center justify-center shadow-inner">
+                            <i class="fas ${user.role === "admin" ? "fa-user" : "fa-user-tie"} text-${user.avatarColor}-600"></i>
+                        </div>
+                        <div class="ml-4">
+                            <div class="text-sm font-medium text-gray-900">
+                                ${user.name}
+                            </div>
+                        </div>
+                    </div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    ${user.username}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    ${user.email}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                    <span class="badge ${user.role === "admin" ? "badge-admin" : "badge-petugas"}">
+                        ${user.role === "admin" ? "Admin" : "Petugas"}
+                    </span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                    <span class="badge ${user.status === "active" ? "badge-active" : "badge-inactive"}">
+                        ${user.status === "active" ? "Aktif" : "Nonaktif"}
+                    </span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    <button class="text-indigo-600 hover:text-indigo-900 mr-3 transition-colors edit-user-btn" data-id="${user.id}">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    ${user.role === "admin" ? `
+                                        <button class="text-gray-400 cursor-not-allowed" disabled title="Tidak dapat menghapus admin utama">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    ` : `
+                                        <button class="text-red-600 hover:text-red-900 mr-3 transition-colors delete-user-btn" data-id="${user.id}">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                        <button class="text-gray-600 hover:text-gray-900 transition-colors change-password-btn" data-id="${user.id}" title="Ganti Password">
+                                            <i class="fas fa-key"></i>
+                                        </button>
+                                    `}
+                </td>
+            `;
+                usersTableBody.appendChild(row);
+            });
+
+            // Add event listeners to action buttons
+            document.querySelectorAll('.edit-user-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const userId = btn.getAttribute('data-id');
+                    const user = users.find(u => u.id == userId);
+                    if (user) openEditUserModal(user);
+                });
+            });
+
+            document.querySelectorAll('.delete-user-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const userId = btn.getAttribute('data-id');
+                    const user = users.find(u => u.id == userId);
+                    if (user) openDeleteUserModal(user);
+                });
+            });
+
+            document.querySelectorAll('.change-password-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const userId = btn.getAttribute('data-id');
+                    const user = users.find(u => u.id == userId);
+                    if (user) openChangePasswordModal(user);
+                });
+            });
+        }
+
+        function updatePagination() {
+            const startItem = (currentPage - 1) * itemsPerPage + 1;
+            const endItem = Math.min(currentPage * itemsPerPage, totalUsers);
+
+            paginationInfo.innerHTML = `
+            Showing <span class="font-medium">${startItem}</span> to <span class="font-medium">${endItem}</span> of <span class="font-medium">${totalUsers}</span> results
+        `;
+
+            currentPageSpan.textContent = currentPage;
+
+            // Disable previous button if on first page
+            prevPageBtn.disabled = currentPage === 1;
+            prevPageMobileBtn.disabled = currentPage === 1;
+
+            // Disable next button if on last page
+            nextPageBtn.disabled = currentPage * itemsPerPage >= totalUsers;
+            nextPageMobileBtn.disabled = currentPage * itemsPerPage >= totalUsers;
+        }
+
+        // Modal functions
+        function openAddUserModal() {
+            isEditMode = false;
+            selectedUser = null;
+            userModalTitle.textContent = 'Tambah Pengguna Baru';
+
+            // Reset form
+            userForm.reset();
+            passwordFields.style.display = 'block';
+
+            // Show modal
+            userModal.classList.remove('hidden');
+        }
+
+        function openEditUserModal(user) {
+            isEditMode = true;
+            selectedUser = user;
+            userModalTitle.textContent = 'Edit Data Pengguna';
+
+            // Fill form with user data
+            document.getElementById('userFirstName').value = user.firstName || '';
+            document.getElementById('userLastName').value = user.lastName || '';
+            document.getElementById('userEmail').value = user.email || '';
+            document.getElementById('userUsername').value = user.username || '';
+            document.getElementById('userRole').value = user.role || 'petugas';
+            document.getElementById('userStatus').value = user.status || 'active';
+
+            // Hide password fields for edit mode
+            passwordFields.style.display = 'none';
+
+            // Show modal
+            userModal.classList.remove('hidden');
+        }
+
+        function closeUserModal() {
+            userModal.classList.add('hidden');
+        }
+
+        function openChangePasswordModal(user) {
+            selectedUser = user;
+            changePasswordUserInfo.innerHTML = `
+            Anda akan mengganti password untuk
+            <span class="font-semibold">
+                ${user.firstName || ''} ${user.lastName || ''} (${user.username || ''})
+            </span>
+        `;
+
+            // Reset form
+            changePasswordForm.reset();
+            hideChangePasswordError();
+
+            // Show modal
+            changePasswordModal.classList.remove('hidden');
+        }
+
+        function closeChangePasswordModal() {
+            changePasswordModal.classList.add('hidden');
+        }
+
+        function openDeleteUserModal(user) {
+            selectedUser = user;
+            deleteUserInfo.innerHTML = `
+            Apakah Anda yakin ingin menghapus pengguna
+            <span class="font-semibold">
+                ${user.firstName || ''} ${user.lastName || ''} (${user.username || ''})
+            </span>? Data yang sudah dihapus tidak dapat dikembalikan.
+        `;
+
+            // Show modal
+            deleteUserModal.classList.remove('hidden');
+        }
+
+        function closeDeleteUserModal() {
+            deleteUserModal.classList.add('hidden');
+        }
+
+        // Event listeners
+        document.addEventListener('DOMContentLoaded', () => {
+            // Check for token on page load
+            const token = localStorage.getItem('token');
+            if (!token) {
+                window.location.href = '/login';
+                return;
+            }
+
+            // Initial fetch
+            fetchUsers();
+
+            // Search input
+            searchInput.addEventListener('input', (e) => {
+                searchQuery = e.target.value;
+                currentPage = 1;
+                fetchUsers();
+            });
+
+            // Items per page select
+            itemsPerPageSelect.addEventListener('change', (e) => {
+                itemsPerPage = Number(e.target.value);
+                currentPage = 1;
+                fetchUsers();
+            });
+
+            // Pagination buttons
+            prevPageBtn.addEventListener('click', () => {
+                if (currentPage > 1) {
+                    currentPage--;
+                    fetchUsers();
+                }
+            });
+
+            nextPageBtn.addEventListener('click', () => {
+                if (currentPage * itemsPerPage < totalUsers) {
+                    currentPage++;
+                    fetchUsers();
+                }
+            });
+
+            prevPageMobileBtn.addEventListener('click', () => {
+                if (currentPage > 1) {
+                    currentPage--;
+                    fetchUsers();
+                }
+            });
+
+            nextPageMobileBtn.addEventListener('click', () => {
+                if (currentPage * itemsPerPage < totalUsers) {
+                    currentPage++;
+                    fetchUsers();
+                }
+            });
+
+            // Add user button
+            document.getElementById('addUserBtn').addEventListener('click', openAddUserModal);
+
+            // Generate password button
+            generatePasswordBtn.addEventListener('click', () => {
+                const newPassword = generateRandomPassword();
+                document.getElementById('userPassword').value = newPassword;
+                document.getElementById('userConfirmPassword').value = newPassword;
+            });
+
+            // User form submission
+            userForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+
+                const formData = {
+                    firstName: document.getElementById('userFirstName').value,
+                    lastName: document.getElementById('userLastName').value,
+                    email: document.getElementById('userEmail').value,
+                    username: document.getElementById('userUsername').value,
+                    role: document.getElementById('userRole').value,
+                    password: document.getElementById('userPassword').value,
+                    confirmPassword: document.getElementById('userConfirmPassword').value,
+                    status: document.getElementById('userStatus').value
+                };
+
+                console.log('Data yang akan dikirim:', formData); // Tambahkan ini
+
+                if (!isEditMode && formData.password !== formData.confirmPassword) {
+                    alert('Password dan konfirmasi password tidak cocok');
+                    return;
+                }
+
+                if (!isEditMode && !validatePassword(formData.password)) {
+                    alert('Password minimal 8 karakter, mengandung huruf besar, huruf kecil, dan angka');
+                    return;
+                }
+
+                saveUser(formData);
+            });
+
+            // Change password form submission
+            changePasswordForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+
+                const passwordData = {
+                    currentPassword: document.getElementById('currentPassword').value,
+                    newPassword: document.getElementById('newPassword').value,
+                    confirmNewPassword: document.getElementById('confirmNewPassword').value
+                };
+
+                // Validation
+                if (passwordData.newPassword !== passwordData.confirmNewPassword) {
+                    showChangePasswordError('Password baru dan konfirmasi password tidak cocok');
+                    return;
+                }
+
+                if (!validatePassword(passwordData.newPassword)) {
+                    showChangePasswordError(
+                        'Password minimal 8 karakter, mengandung huruf besar, huruf kecil, dan angka');
+                    return;
+                }
+
+                changeUserPassword(passwordData);
+            });
+
+            // Delete user confirmation
+            confirmDeleteUserBtn.addEventListener('click', deleteUser);
+
+            // Modal close buttons
+            cancelUserModalBtn.addEventListener('click', closeUserModal);
+            cancelChangePasswordModalBtn.addEventListener('click', closeChangePasswordModal);
+            cancelDeleteUserModalBtn.addEventListener('click', closeDeleteUserModal);
+
+            // Close modals when clicking outside
+            userModal.addEventListener('click', (e) => {
+                if (e.target === userModal) closeUserModal();
+            });
+
+            changePasswordModal.addEventListener('click', (e) => {
+                if (e.target === changePasswordModal) closeChangePasswordModal();
+            });
+
+            deleteUserModal.addEventListener('click', (e) => {
+                if (e.target === deleteUserModal) closeDeleteUserModal();
+            });
+        });
+        // Sidebar toggle functionality
+        let isCollapsed = true;
+
+        function toggleSidebarState() {
+            isCollapsed = !isCollapsed;
+            const sidebar = document.getElementById("sidebar");
+            const toggleBtn = document.getElementById("toggleSidebar");
+
+            if (isCollapsed) {
+                sidebar.classList.add("collapsed");
+                sidebar.classList.remove("expanded");
+                toggleBtn.classList.add("collapsed");
+                toggleBtn.querySelector('i').className = 'fas fa-chevron-left';
+            } else {
+                sidebar.classList.add("expanded");
+                sidebar.classList.remove("collapsed");
+                toggleBtn.classList.remove("collapsed");
+                toggleBtn.querySelector('i').className = 'fas fa-chevron-right';
+            }
+        }
+
+        // Mobile sidebar toggle
+        document.getElementById('mobileToggleSidebar').addEventListener('click', function() {
+            const sidebar = document.getElementById("sidebar");
+            const isCollapsed = sidebar.classList.contains("collapsed");
+
+            if (isCollapsed) {
+                sidebar.classList.remove("collapsed");
+                sidebar.classList.add("expanded");
+            } else {
+                sidebar.classList.add("collapsed");
+                sidebar.classList.remove("expanded");
+            }
+        });
+    </script>
+</body>
+
+</html>
+
+saya ingin perbaiki:
+ - tambahkan pagination items per page.
+ - paginatin showing results sesuai dengan data yang ada di tabel.
+ - saya ingin serchbar pada bagian header ketika saya ingin mencari riwayat pengembalian, maka akan menampilkan riwayat pengembalian sesuai yang dicari.
